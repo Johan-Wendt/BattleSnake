@@ -35,6 +35,7 @@ public class MainBoard extends Application {
     private PathTransition currentPath = new PathTransition();
     private ArrayList<Line> verticalGrid = new ArrayList();
     private ArrayList<Line> horizontalGrid = new ArrayList();
+    private PathTransition path;
     
     
     public MainBoard () {
@@ -46,6 +47,7 @@ public class MainBoard extends Application {
         Scene scene = new Scene(pane, GRID_WIDTH, GRID_HEIGTH);
         makeGameGrid();
         makePlayer();
+        makePath();
         randomMove();
         BattleStage.setScene(scene);
         BattleStage.show();
@@ -54,6 +56,8 @@ public class MainBoard extends Application {
             switch (e.getCode()) {
                 case DOWN: moveDown(); break;
                 case RIGHT: moveRight(); break;
+                case LEFT: moveLeft(); break;
+                case UP: moveUp(); break;
                 default:System.out.println("default");
             }
         });
@@ -74,7 +78,7 @@ public class MainBoard extends Application {
         
         for(int i = 6; i < GRID_WIDTH; i += 6) {
         Line line = new Line(i, 0, i, GRID_HEIGTH);
-        line.setStroke(Color.RED);
+        line.setStroke(Color.TRANSPARENT);
         pane.getChildren().add(line);
         verticalGrid.add(line);
         }
@@ -83,14 +87,25 @@ public class MainBoard extends Application {
         
         for(int i = 6; i < GRID_HEIGTH; i += 6) {
         Line line = new Line(0, i, GRID_WIDTH, i);
-        line.setStroke(Color.RED);
+        line.setStroke(Color.TRANSPARENT);
         pane.getChildren().add(line);
         horizontalGrid.add(line);
         }
-        
-        
 
-
+    }
+    
+    /**
+     * Create the path that the player is moving along. The path is the current
+     * line the player is moving along in the grid.
+     */
+    public void makePath() {
+        path = new PathTransition();
+        path.setDuration(Duration.millis(GAME_SPEED));
+        path.setInterpolator(Interpolator.LINEAR);
+        path.setNode(playerOne);
+        path.setCycleCount(Timeline.INDEFINITE);
+        path.setAutoReverse(true);
+        
     }
     
     /**
@@ -155,14 +170,12 @@ public class MainBoard extends Application {
      * random. Other possible use is teleportation. N.B. Not random yet!
      */
     public void randomMove() {
+        makePath();
         currentLine = horizontalGrid.get(15);
         turningLine = currentLine;
-        PathTransition path = new PathTransition();
         currentPath = path;
-        path.setDuration(Duration.millis(GAME_SPEED));
-        path.setInterpolator(Interpolator.LINEAR);
         path.setPath(turningLine);
-        path.setNode(playerOne);
+
 
         
         //For testing. To be removed for real game (Or kept as a bonus "No walls".
@@ -175,47 +188,60 @@ public class MainBoard extends Application {
     
     /**
      * Makes the player move right. For the future this should probable move to
-     * the player-class. Or possibly just get the pley and its direction.
+     * the player-class. Or possibly just get the playr and its direction.
      */
     public void moveRight() {
+        makePath();
         double startTime = (currentLine.getEndX()/GRID_WIDTH)*GAME_SPEED;
         turningLine = closestHorizontalLine();
-        PathTransition path = new PathTransition();
         currentPath = path;
-        path.setDuration(Duration.millis(GAME_SPEED));
-        path.setInterpolator(Interpolator.LINEAR);
-        path.setPath(turningLine);
-        path.setNode(playerOne);
-
-        
-        //For testing. To be removed for real game (Or kept as a bonus "No walls".
-        path.setCycleCount(Timeline.INDEFINITE);
-        
-        
+        path.setPath(turningLine);   
         path.playFrom(Duration.millis(startTime));
+        currentLine = turningLine;
+ 
+    }
+    
+    /**
+     * Makes the player move left. For the future this should probable move to
+     * the player-class. Or possibly just get the playr and its direction.
+     */
+    public void moveLeft() {
+        makePath();
+        double startTime = (currentLine.getEndX()/GRID_WIDTH)*GAME_SPEED;
+        turningLine = closestHorizontalLine();
+        currentPath = path;
+        path.setPath(turningLine);
+        path.playFrom(Duration.millis(2*GAME_SPEED - startTime));
         currentLine = turningLine;
  
     }
     /**
      * Makes the player move down. For the future this should probable move to
-     * the player-class. Or possibly just get the pley and its direction.
+     * the player-class. Or possibly just get the playr and its direction.
      */
     public void moveDown() {
+        makePath();
         double startTime = (currentLine.getEndY()/GRID_HEIGTH)*GAME_SPEED;
         turningLine = closestVerticalLine();
-        PathTransition path = new PathTransition();
         currentPath = path;
-        path.setDuration(Duration.millis(GAME_SPEED));
-        path.setInterpolator(Interpolator.LINEAR);
         path.setPath(turningLine);
-        path.setNode(playerOne);
-
-        
-        //For testing. To be removed for real game
-        path.setCycleCount(Timeline.INDEFINITE);
-        
-        
         path.playFrom(Duration.millis(startTime));
+        currentLine = turningLine;
+        
+        
+    }
+    
+     /**
+     * Makes the player move upp. For the future this should probable move to
+     * the player-class. Or possibly just get the playr and its direction.
+     */
+    public void moveUp() {
+        makePath();
+        double startTime = (currentLine.getEndY()/GRID_HEIGTH)*GAME_SPEED;
+        turningLine = closestVerticalLine();
+        currentPath = path;
+        path.setPath(turningLine);
+        path.playFrom(Duration.millis(2*GAME_SPEED - startTime));
         currentLine = turningLine;
         
         
