@@ -30,10 +30,8 @@ public class MainBoard extends Application {
     private static double GAME_SPEED = 3000;
     private static double GRID_WIDTH = 804;
     private static double GRID_HEIGTH = 600;
-    private int playerSpeed = 2;
     private Line currentLine;
     private Line turningLine;
-    private boolean turningboolean = false;
     private PathTransition currentPath = new PathTransition();
     private ArrayList<Line> verticalGrid = new ArrayList();
     private ArrayList<Line> horizontalGrid = new ArrayList();
@@ -48,7 +46,7 @@ public class MainBoard extends Application {
         Scene scene = new Scene(pane, GRID_WIDTH, GRID_HEIGTH);
         makeGameGrid();
         makePlayer();
-        moveRight();
+        randomMove();
         BattleStage.setScene(scene);
         BattleStage.show();
         
@@ -90,8 +88,7 @@ public class MainBoard extends Application {
         horizontalGrid.add(line);
         }
         
-        currentLine = horizontalGrid.get(15);
-        turningLine = currentLine;
+        
 
 
     }
@@ -113,7 +110,6 @@ public class MainBoard extends Application {
      * @return the closest vertical line.
      */
     public Line closestVerticalLine() {
-        double atCurrentPixelX = (currentPath.getCurrentTime().toMillis()*GRID_WIDTH)/GAME_SPEED;
         for(Line line:verticalGrid) {
             if(line.getEndX() >= getCurrentPixelX()) {
                 return line;
@@ -127,9 +123,9 @@ public class MainBoard extends Application {
      * for the moment. Used for turning upp or down.
      */
     public Line closestHorizontalLine() {
-        double atCurrentPixelX = (currentPath.getCurrentTime().toMillis()*GRID_WIDTH)/GAME_SPEED;
-        for(Line line:verticalGrid) {
-            if(line.getEndX() >= getCurrentPixelY()) {
+
+        for(Line line:horizontalGrid) {
+            if(line.getEndY() >= getCurrentPixelY()) {
                 return line;
             }
         }
@@ -142,6 +138,7 @@ public class MainBoard extends Application {
      */
     public double getCurrentPixelX() {
         return (currentPath.getCurrentTime().toMillis()*GRID_WIDTH)/GAME_SPEED;
+
     }
     
      /**
@@ -154,24 +151,49 @@ public class MainBoard extends Application {
     
     
     /**
+     * Initiate movement for starting the player. Should possibly be made 
+     * random. Other possible use is teleportation. N.B. Not random yet!
+     */
+    public void randomMove() {
+        currentLine = horizontalGrid.get(15);
+        turningLine = currentLine;
+        PathTransition path = new PathTransition();
+        currentPath = path;
+        path.setDuration(Duration.millis(GAME_SPEED));
+        path.setInterpolator(Interpolator.LINEAR);
+        path.setPath(turningLine);
+        path.setNode(playerOne);
+
+        
+        //For testing. To be removed for real game (Or kept as a bonus "No walls".
+        path.setCycleCount(Timeline.INDEFINITE);
+        
+        
+        path.play();
+        currentLine = turningLine;
+    }
+    
+    /**
      * Makes the player move right. For the future this should probable move to
      * the player-class. Or possibly just get the pley and its direction.
      */
     public void moveRight() {
+        double startTime = (currentLine.getEndX()/GRID_WIDTH)*GAME_SPEED;
+        turningLine = closestHorizontalLine();
         PathTransition path = new PathTransition();
         currentPath = path;
-        
         path.setDuration(Duration.millis(GAME_SPEED));
-        
-
-        path.setPath(horizontalGrid.get(15));
-        path.setNode(playerOne);
-        
-        //For testing. To be removed for real game
-        path.setCycleCount(Timeline.INDEFINITE);
         path.setInterpolator(Interpolator.LINEAR);
+        path.setPath(turningLine);
+        path.setNode(playerOne);
+
         
-        path.play();
+        //For testing. To be removed for real game (Or kept as a bonus "No walls".
+        path.setCycleCount(Timeline.INDEFINITE);
+        
+        
+        path.playFrom(Duration.millis(startTime));
+        currentLine = turningLine;
  
     }
     /**
@@ -179,7 +201,7 @@ public class MainBoard extends Application {
      * the player-class. Or possibly just get the pley and its direction.
      */
     public void moveDown() {
-        double startTime = (currentLine.getEndX()/GRID_HEIGTH)*GAME_SPEED;
+        double startTime = (currentLine.getEndY()/GRID_HEIGTH)*GAME_SPEED;
         turningLine = closestVerticalLine();
         PathTransition path = new PathTransition();
         currentPath = path;
